@@ -26,8 +26,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Column(
                 children: [
                   Container(
-                      margin: EdgeInsets.only(
-                          top: MediaQuery.of(context).size.height * 0.05),
+                      padding: EdgeInsets.only(top: 20),
+                      height: 80,
+                      color: Colors.grey.withOpacity(0.12),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -68,9 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   )),
               Spacer(),
               Container(
-                alignment: Alignment.center,
+                alignment: Alignment.bottomCenter,
                 margin: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.94,
+                    top: (MediaQuery.of(context).size.width<MediaQuery.of(context).size.height)? MediaQuery.of(context).size.height * 0.9:MediaQuery.of(context).size.height * 1.2,
                     left: 0,
                     right: 0),
                 child: ElevatedButton(

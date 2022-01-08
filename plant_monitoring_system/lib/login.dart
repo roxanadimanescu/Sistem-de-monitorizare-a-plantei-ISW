@@ -1,12 +1,93 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:plant_monitoring_system/myPlants.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
+
+class Userdata {
+  String userID;
+  String username;
+  String email;
+  String password;
+
+  Userdata(
+      {required this.userID,
+        required this.username,
+        required this.email,
+        required this.password});
+
+  factory Userdata.fromJson(Map<String, dynamic> json) {
+    return Userdata(
+        userID: json['id'],
+        username: json['username'],
+        email: json['email'],
+        password: json['password']);
+  }
+}
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  bool access = false;
+   String idForUser='';
+  TextEditingController usernameController = new TextEditingController();
+  TextEditingController emailController = new TextEditingController();
+  TextEditingController passwordController = new TextEditingController();
+   final String apiLoginURL =
+       'https://plantmonitoringsystem5.000webhostapp.com/login.php';
+  final String apiSignUpURL =
+      'https://plantmonitoringsystem5.000webhostapp.com/register.php';
+
+  void postProfileData() async {
+    if(!isSignupScreen){
+      var dataLogin = {'username': usernameController.text,'password': passwordController.text};
+      print("login");
+      print(dataLogin);
+
+      var response = await http.post(Uri.parse(apiLoginURL), body: json.encode(dataLogin));
+      var userIdResponse = await http.get(Uri.parse(apiLoginURL));
+
+      if (userIdResponse.statusCode == 200) {
+        if(userIdResponse.body.isNotEmpty) {
+          access = true;
+          var json = jsonDecode(userIdResponse.body);
+          var idJson = json['id'];
+          idForUser = idJson.toString();
+          print("222222222222");
+          print(idJson);
+          print(idForUser);
+        }
+
+
+//         final items = json.decode(userIdResponse.body);
+//         print("222222222222");
+print(userIdResponse.body);
+//         List<Userdata> userList = (items as List).map((data) => Userdata.fromJson(data)).toList();
+// print(userList);
+//          idForUser = userList[0].userID;
+//          print("11111111111111111111111");
+//          print(idForUser);
+      } else {
+        throw Exception('Failed to load data from Server.');
+      }
+
+    }
+    else{
+      var dataSignUp = {'username': usernameController.text,'email': emailController.text,'password': passwordController.text};
+      print("signup");
+      print(dataSignUp);
+      var response1 = await http.post(Uri.parse(apiSignUpURL), body: json.encode(dataSignUp));
+      print(response1.body);
+      if (response1.statusCode == 200) {
+        access = true;
+      }
+    }
+  }
+
   bool isSignupScreen = false;
 
   @override
@@ -103,6 +184,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+
+
   Container buildLoginSection() {
     return Container(
       child: Column(
@@ -121,9 +204,14 @@ class _LoginScreenState extends State<LoginScreen> {
               shadowColor: Colors.black,
             ),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => MyPlantsScreen()));
-            },
+              print(usernameController.text);
+              postProfileData();
+              print("se primesc date??????????");
+              print(idForUser);
+              if(access)
+              navigateToNextActivity(
+                  context, idForUser);
+              },
           ),
         ],
       ),
@@ -150,8 +238,10 @@ class _LoginScreenState extends State<LoginScreen> {
               shadowColor: Colors.black,
             ),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => MyPlantsScreen()));
+              postProfileData();
+              if(access)
+                navigateToNextActivity(
+                    context, idForUser);
             },
           ),
         ],
@@ -164,6 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: TextField(
+        controller: isPassword ? passwordController : isEmail? emailController : usernameController,
         obscureText: isPassword,
         keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
         decoration: InputDecoration(
@@ -182,6 +273,15 @@ class _LoginScreenState extends State<LoginScreen> {
           hintStyle: TextStyle(fontSize: 15, color: Colors.black),
         ),
       ),
+    );
+  }
+
+  navigateToNextActivity(BuildContext context, String dataHolder) {
+    Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) => MyPlantsScreen(dataHolder)
+
+        )
     );
   }
 }

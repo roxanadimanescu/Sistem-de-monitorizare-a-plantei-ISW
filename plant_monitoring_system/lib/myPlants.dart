@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:plant_monitoring_system/internetConnection.dart';
 import 'package:plant_monitoring_system/viewPlant.dart';
+
+import 'myProfile.dart';
 
 class Plantdata {
   String plantID;
@@ -26,24 +29,55 @@ class Plantdata {
 }
 
 class MyPlantsScreen extends StatefulWidget {
+  late final String idHolder;
+  MyPlantsScreen(this.idHolder);
+
   @override
-  _MyPlantsState createState() => _MyPlantsState();
+  _MyPlantsState createState() => _MyPlantsState(this.idHolder);
 }
 
 class _MyPlantsState extends State<MyPlantsScreen> {
-  final String apiURL =
+  final String getPlantURL =
       'https://plantmonitoringsystem5.000webhostapp.com/get.php';
+  final String deletePlantURL =
+      'https://plantmonitoringsystem5.000webhostapp.com/deletePlant.php';
+
+
+  final String idHolder;
+  _MyPlantsState(this.idHolder);
+
+  void deletePlant(String deleteID) async{
+    var data = {'id': int.parse(deleteID.toString())};
+    print("de delete id");
+    print(data);
+    var deletePlantResponse = await http.post(Uri.parse(deletePlantURL), body: json.encode(data));
+    print("response");
+    print(deletePlantResponse.body);
+  }
 
   Future<List<Plantdata>> fetchPlants() async {
-    var response = await http.get(Uri.parse(apiURL));
+    var data = {'id': int.parse(idHolder.toString())};
+    print("data ffffff");
+    print(data);
 
-    if (response.statusCode == 200) {
+    var getPlantResponse = await http.post(Uri.parse(getPlantURL), body: json.encode(data));
 
-      final items = json.decode(response.body).cast<Map<String, dynamic>>();
+    //var sendUserIdResponse = await http.post(Uri.parse(getPlantURL), body: json.encode(data));
+    //var getPlantResponse = await http.get(Uri.parse(getPlantURL));
+    print("respone my plants");
+    print(getPlantResponse.body);
+    print("respone my what?");
+    //print(sendUserIdResponse.body);
+
+
+    if (getPlantResponse.statusCode == 200) {
+      final items = json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
+      print("print plante response idk");
 
       List<Plantdata> plantList = items.map<Plantdata>((json) {
         return Plantdata.fromJson(json);
       }).toList();
+      print(plantList);
       setState(() {
         packageList =  plantList;
         _selectedPackage = packageList[0];
@@ -59,10 +93,21 @@ class _MyPlantsState extends State<MyPlantsScreen> {
 
   @override
   void initState() {
-    super.initState();
-    futurePlants = fetchPlants();
+    // ConnectionUtil connectionStatus = ConnectionUtil.getInstance();
+    // connectionStatus.initialize();
+    // connectionStatus.connectionChange.listen(connectionChanged);
 
+    futurePlants = fetchPlants();
+    super.initState();
   }
+
+  // void connectionChanged(dynamic hasConnection) {
+  //   setState(() {
+  //     hasInterNetConnection = hasConnection;
+  //     print("~~~ Internet connection ~~~~");
+  //     print(hasInterNetConnection);
+  //   });
+  // }
 
   navigateToNextActivity(BuildContext context, String dataHolder) {
     Navigator.of(context).push(
@@ -74,6 +119,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("se primesc date??????????");
     return FutureBuilder<List<Plantdata>>(
       future: fetchPlants(),
       builder: (context, snapshot){
@@ -117,18 +163,6 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Spacer(),
-                              Expanded(
-                                child: Center(
-                                  child: RichText(
-                                    text: TextSpan(
-                                      text: 'Planti ',
-                                      style: TextStyle(
-                                          color: Colors.green, fontSize: 45),
-                                    ),
-                                  ),
-                                ),
-                              ),
                               Expanded(
                                 child: Center(
                                   child: ElevatedButton(
@@ -148,6 +182,34 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                         builder: (BuildContext context) =>
                                             _buildPopupAdd(context, items),
                                       );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Center(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: 'Planti ',
+                                      style: TextStyle(
+                                          color: Colors.green, fontSize: 45),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Center(
+                                  child: ElevatedButton(
+                                    child: Icon(Icons.person),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: CircleBorder(),
+                                      primary: Colors.grey,
+                                      elevation: 0,
+                                      maximumSize: Size(90, 90),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (context) => MyProfileScreen()));
                                     },
                                   ),
                                 ),
@@ -316,7 +378,9 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                                   context,
                                                                   snapshot
                                                                       .data![index]
-                                                                      .plantType),
+                                                                      .plantType,snapshot
+                                                                  .data![index]
+                                                                  .plantID),
                                                         );
                                                       },
                                                     ),
@@ -420,8 +484,8 @@ class _MyPlantsState extends State<MyPlantsScreen> {
 
   }
 
-  Widget _buildPopupDelete(BuildContext context, String text) {
-    late Future<List<Plantdata>> futurePlants;
+  Widget _buildPopupDelete(BuildContext context, String text, String id) {
+    //late Future<List<Plantdata>> futurePlants;
 
     return new AlertDialog(
       title: const Text("Are you sure you want to delete this plant?"),
@@ -440,6 +504,8 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       actions: <Widget>[
         new ElevatedButton(
           onPressed: () {
+            deletePlant(id);
+            //aici facut pamapamadadfgh
             Navigator.of(context).pop();
           },
           style: ElevatedButton.styleFrom(

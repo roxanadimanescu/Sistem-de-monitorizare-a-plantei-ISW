@@ -38,16 +38,17 @@ class MyPlantsScreen extends StatefulWidget {
 
 class _MyPlantsState extends State<MyPlantsScreen> {
   final String getPlantURL =
-      'https://plantmonitoringsystem5.000webhostapp.com/get.php';
+      'https://plantmonitoringsystem5.000webhostapp.com/getMyPlant.php';
   final String deletePlantURL =
       'https://plantmonitoringsystem5.000webhostapp.com/deletePlant.php';
-
+  final String getAllPlantsURL='https://plantmonitoringsystem5.000webhostapp.com/get.php';
 
   final String idHolder;
   _MyPlantsState(this.idHolder);
 
-  void deletePlant(String deleteID) async{
-    var data = {'id': int.parse(deleteID.toString())};
+  void deletePlant(String deleteID, String userID) async{
+    print("hvjvavausdausd");
+    var data = {'plant_id': int.parse(deleteID.toString()),'user_id': int.parse(userID.toString()) };
     print("de delete id");
     print(data);
     var deletePlantResponse = await http.post(Uri.parse(deletePlantURL), body: json.encode(data));
@@ -55,24 +56,32 @@ class _MyPlantsState extends State<MyPlantsScreen> {
     print(deletePlantResponse.body);
   }
 
-  Future<List<Plantdata>> fetchPlants() async {
+  Future<List<Plantdata>> fetchMyPlants() async {
     var data = {'id': int.parse(idHolder.toString())};
-    print("data ffffff");
-    print(data);
 
     var getPlantResponse = await http.post(Uri.parse(getPlantURL), body: json.encode(data));
-
-    //var sendUserIdResponse = await http.post(Uri.parse(getPlantURL), body: json.encode(data));
-    //var getPlantResponse = await http.get(Uri.parse(getPlantURL));
-    print("respone my plants");
-    print(getPlantResponse.body);
-    print("respone my what?");
-    //print(sendUserIdResponse.body);
-
-
     if (getPlantResponse.statusCode == 200) {
       final items = json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
-      print("print plante response idk");
+
+      List<Plantdata> plantList = items.map<Plantdata>((json) {
+        return Plantdata.fromJson(json);
+      }).toList();
+      print(plantList);
+      // setState(() {
+      //   packageList =  plantList;
+      //   _selectedPackage = packageList[0];
+      // });
+      return plantList;
+    } else {
+      throw Exception('Failed to load data from Server.');
+    }
+  }
+  Future<List<Plantdata>> fetchAllPlants() async {
+    var data = {'id': int.parse(idHolder.toString())};
+
+    var getPlantResponse = await http.post(Uri.parse(getAllPlantsURL), body: json.encode(data));
+    if (getPlantResponse.statusCode == 200) {
+      final items = json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
 
       List<Plantdata> plantList = items.map<Plantdata>((json) {
         return Plantdata.fromJson(json);
@@ -89,6 +98,8 @@ class _MyPlantsState extends State<MyPlantsScreen> {
   }
   late Plantdata _selectedPackage;
   late Future<List<Plantdata>> futurePlants;
+  late Future<List<Plantdata>> futureAllPlants;
+
   List<Plantdata> packageList = [];
 
   @override
@@ -97,9 +108,12 @@ class _MyPlantsState extends State<MyPlantsScreen> {
     // connectionStatus.initialize();
     // connectionStatus.connectionChange.listen(connectionChanged);
 
-    futurePlants = fetchPlants();
+    futurePlants = fetchMyPlants();
+    futureAllPlants = fetchAllPlants();
     super.initState();
   }
+
+
 
   // void connectionChanged(dynamic hasConnection) {
   //   setState(() {
@@ -121,7 +135,8 @@ class _MyPlantsState extends State<MyPlantsScreen> {
   Widget build(BuildContext context) {
     print("se primesc date??????????");
     return FutureBuilder<List<Plantdata>>(
-      future: fetchPlants(),
+      //future:Future.wait([fetchMyPlants(), fetchAllPlants()]) ,
+        future: fetchAllPlants(),
       builder: (context, snapshot){
         if (snapshot.hasData) {
           List<DropdownMenuItem<Plantdata>> items = packageList.map((item) {
@@ -380,7 +395,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                                       .data![index]
                                                                       .plantType,snapshot
                                                                   .data![index]
-                                                                  .plantID),
+                                                                  .plantID,idHolder),
                                                         );
                                                       },
                                                     ),
@@ -484,8 +499,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
 
   }
 
-  Widget _buildPopupDelete(BuildContext context, String text, String id) {
-    //late Future<List<Plantdata>> futurePlants;
+  Widget _buildPopupDelete(BuildContext context, String text, String id, String idUser) {
 
     return new AlertDialog(
       title: const Text("Are you sure you want to delete this plant?"),
@@ -504,7 +518,9 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       actions: <Widget>[
         new ElevatedButton(
           onPressed: () {
-            deletePlant(id);
+            deletePlant(id, idUser
+
+            );
             //aici facut pamapamadadfgh
             Navigator.of(context).pop();
           },

@@ -45,8 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void postProfileData() async {
     if(!isSignupScreen){
       var dataLogin = {'username': usernameController.text,'password': passwordController.text};
-      print("login");
-      print(dataLogin);
+
 
       var response = await http.post(Uri.parse(apiLoginURL), body: json.encode(dataLogin));
       var userIdResponse = await http.get(Uri.parse(apiLoginURL));
@@ -57,9 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
           var json = jsonDecode(userIdResponse.body);
           var idJson = json['id'];
           idForUser = idJson.toString();
-          print("222222222222");
-          print(idJson);
-          print(idForUser);
+
         }
 
 
@@ -204,7 +201,6 @@ print(userIdResponse.body);
               shadowColor: Colors.black,
             ),
             onPressed: () {
-              print(usernameController.text);
               postProfileData();
               print("se primesc date??????????");
               print(idForUser);

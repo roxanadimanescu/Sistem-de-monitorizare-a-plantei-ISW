@@ -3,42 +3,72 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:plant_monitoring_system/myPlants.dart';
 
+import 'login.dart';
+
 class MyProfileScreen extends StatefulWidget {
-  //late final String idHolder;
+  late final String idHolder;
   //ViewPlantScreen(this.idHolder);
   @override
-  _MyProfileState createState() => _MyProfileState();
+  _MyProfileState createState() => _MyProfileState(this.idHolder);
 }
 
 class _MyProfileState extends State<MyProfileScreen> {
-  //final String apiURL = 'https://plantmonitoringsystem5.000webhostapp.com/getSpecificPlant.php';
-  //final String idHolder;
-  //_MyProfileState(this.idHolder);
-  // Future<List<Plantdata>> fetchPlant() async {
-  //
-  //   var data = {'id': int.parse(idHolder.toString())};
-  //   print(data);
-  //   print("ID");
-  //   var response = await http.post(Uri.parse(apiURL), body: json.encode(data));
-  //   print(response.body);
-  //   if (response.statusCode == 200) {
-  //     final items = json.decode(response.body).cast<Map<String, dynamic>>();
-  //     List<Plantdata> plantList = items.map<Plantdata>((json) {
-  //       return Plantdata.fromJson(json);
-  //     }).toList();
-  //     print(plantList);
-  //     return plantList;
-  //   }
-  //   else {
-  //     throw Exception('Failed to load data from Server.');
-  //   }
-  //
-  // }
-  //late Future<List<Plantdata>> futurePlants;
+  bool pressedChangeUsername = false;
+  bool pressedChangePassword = false;
+
+  final String apiChangeUsernameURL = 'https://plantmonitoringsystem5.000webhostapp.com/changeUsername.php';
+  final String apiChangePasswordURL = 'https://plantmonitoringsystem5.000webhostapp.com/changePass.php';
+  final String idHolder;
+  TextEditingController newUsernameController = new TextEditingController();
+  TextEditingController newPasswordController = new TextEditingController();
+  TextEditingController oldPasswordController = new TextEditingController();
+  _MyProfileState(this.idHolder);
+
+  Future<List<Userdata>> changeUsername() async {
+
+    var data = {'id': int.parse(idHolder.toString()), 'new_username': int.parse(newUsernameController.text)};
+    print(data);
+    print("ID");
+    var response = await http.post(Uri.parse(apiChangeUsernameURL), body: json.encode(data));
+    print(response.body);
+    if (response.statusCode == 200) {
+      final items = json.decode(response.body).cast<Map<String, dynamic>>();
+      List<Userdata> usersList = items.map<Plantdata>((json) {
+        return Userdata.fromJson(json);
+      }).toList();
+      print(usersList);
+      return usersList;
+    }
+    else {
+      throw Exception('Failed to load data from Server.');
+    }
+
+  }
+
+  Future<List<Userdata>> changePassword() async {
+
+    var data = {'id': int.parse(idHolder.toString()), 'old_pass': int.parse(oldPasswordController.text), 'new_pass': int.parse(newPasswordController.text)};
+    print(data);
+    print("ID");
+    var response = await http.post(Uri.parse(apiChangePasswordURL), body: json.encode(data));
+    print(response.body);
+    if (response.statusCode == 200) {
+      final items = json.decode(response.body).cast<Map<String, dynamic>>();
+      List<Userdata> usersList = items.map<Plantdata>((json) {
+        return Userdata.fromJson(json);
+      }).toList();
+      print(usersList);
+      return usersList;
+    }
+    else {
+      throw Exception('Failed to load data from Server.');
+    }
+
+  }
+
   @override
   void initState() {
     super.initState();
-    //futurePlants= fetchPlant();
   }
   @override
   Widget build(BuildContext context) {
@@ -137,7 +167,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                   .of(context)
                                   .size
                                   .width - 70,
-                              height: 200,
+                              height: 500,
                               alignment: Alignment.center,
                               child: Column(
                                 children: [
@@ -157,15 +187,22 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 borderRadius: new BorderRadius.circular(20.0),
                                               ),
                                             ),
-                                              onPressed: () => null,
+                                            onPressed: () {
+                                              setState(() {
+                                                pressedChangeUsername = !pressedChangeUsername;
+                                              });
+                                            },
                                               child: Stack(
                                                 children: <Widget>[
-                                                  Align(
-                                                      alignment: Alignment.centerLeft,
-                                                      child: Icon(Icons.person, color: Colors.green,)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(top:5),
+                                                    child: Align(
+                                                        alignment: Alignment.centerLeft,
+                                                        child: Icon(Icons.person, color: Colors.green,)
+                                                    ),
                                                   ),
                                                   Padding(
-                                                    padding: const EdgeInsets.only(left: 30),
+                                                    padding: const EdgeInsets.only(left: 30, top:5),
                                                     child: Align(
                                                         alignment: Alignment.centerLeft,
                                                         child: FittedBox(
@@ -180,13 +217,57 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                   ),
                                                   Align(
                                                       alignment: Alignment.centerRight,
-                                                      child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,)
+                                                      child: Icon(
+                                                        !pressedChangeUsername ? Icons.arrow_drop_down : Icons.arrow_drop_up  ,
+                                                        color: Colors.black,
+                                                        size: 35,)
                                                   ),
                                                 ],
                                               ),
                                           ),
                                         ),
+                                        if(pressedChangeUsername)
+                                          Padding(
+                                            padding: const EdgeInsets.only(bottom: 15.0),
+                                            child: Container(
+                                              height: 45,
+                                              child: TextField(
+                                                controller: newUsernameController,
+                                                decoration: InputDecoration(
+                                                  fillColor: Colors.white,
+                                                  filled: true,
 
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(color: Colors.blue),
+                                                    //borderRadius: BorderRadius.all(Radius.circular(35.0)),
+                                                  ),
+                                                  hintText: "hintText",
+                                                  hintStyle: TextStyle(fontSize: 15, color: Colors.black),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        if(pressedChangeUsername)
+                                          Padding(
+                                              padding: const EdgeInsets.only(bottom: 15.0),
+                                              child: ElevatedButton(
+                                                child: Text(
+                                                  "Done",
+                                                  textScaleFactor: 1.5,
+                                                ),
+                                                style: ElevatedButton.styleFrom(
+                                                  primary: Colors.white,
+                                                  onPrimary: Colors.black,
+                                                  elevation: 5,
+                                                  shadowColor: Colors.black,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+
+                                                  });
+                                                },
+                                              )
+                                          ),
                                         Padding(
                                           padding: const EdgeInsets.only(bottom: 15.0),
                                           child: ElevatedButton(
@@ -196,15 +277,22 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 borderRadius: new BorderRadius.circular(20.0),
                                               ),
                                             ),
-                                            onPressed: () => null,
+                                            onPressed: () {
+                                              setState(() {
+                                                pressedChangePassword = !pressedChangePassword;
+                                              });
+                                            },
                                             child: Stack(
                                               children: <Widget>[
-                                                Align(
-                                                    alignment: Alignment.centerLeft,
-                                                    child: Icon(Icons.lock, color: Colors.green,)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top:5),
+                                                  child: Align(
+                                                      alignment: Alignment.centerLeft,
+                                                      child: Icon(Icons.lock, color: Colors.green,)
+                                                  ),
                                                 ),
                                                 Padding(
-                                                  padding: const EdgeInsets.only(left: 30),
+                                                  padding: const EdgeInsets.only(left: 30,top: 5),
                                                   child: Align(
                                                       alignment: Alignment.centerLeft,
                                                       child: FittedBox(
@@ -219,11 +307,77 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 ),
                                                 Align(
                                                     alignment: Alignment.centerRight,
-                                                    child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,)
+                                                    child: Icon(
+                                                      pressedChangePassword ? Icons.arrow_drop_down : Icons.arrow_drop_up  ,
+                                                      color: Colors.black,
+                                                      size: 35,)
                                                 ),
                                               ],
                                             ),
                                           ),
+                                        ),
+                                        if(pressedChangePassword)
+                                          Padding(
+                                            padding: const EdgeInsets.only(bottom: 15.0),
+                                            child: Container(
+                                              height: 45,
+                                              child: TextField(
+                                                controller: oldPasswordController,
+                                                decoration: InputDecoration(
+                                                  fillColor: Colors.white,
+                                                  filled: true,
+
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(color: Colors.blue),
+                                                    //borderRadius: BorderRadius.all(Radius.circular(35.0)),
+                                                  ),
+                                                  hintText: "old pw",
+                                                  hintStyle: TextStyle(fontSize: 15, color: Colors.black),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        if(pressedChangePassword)
+                                          Padding(
+                                            padding: const EdgeInsets.only(bottom: 15.0),
+                                            child: Container(
+                                              height: 45,
+                                              child: TextField(
+                                                controller: newPasswordController,
+                                                decoration: InputDecoration(
+                                                  fillColor: Colors.white,
+                                                  filled: true,
+
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(color: Colors.blue),
+                                                    //borderRadius: BorderRadius.all(Radius.circular(35.0)),
+                                                  ),
+                                                  hintText: "new pw",
+                                                  hintStyle: TextStyle(fontSize: 15, color: Colors.black),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        if(pressedChangePassword)
+                                          Padding(
+                                          padding: const EdgeInsets.only(bottom: 15.0),
+                                          child: ElevatedButton(
+                                            child: Text(
+                                              "Done",
+                                              textScaleFactor: 1.5,
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              primary: Colors.white,
+                                              onPrimary: Colors.black,
+                                              elevation: 5,
+                                              shadowColor: Colors.black,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+
+                                              });
+                                            },
+                                          )
                                         ),
 
                                         Padding(
@@ -285,6 +439,8 @@ class _MyProfileState extends State<MyProfileScreen> {
 
 
     );
-
   }
+
+
+
 }

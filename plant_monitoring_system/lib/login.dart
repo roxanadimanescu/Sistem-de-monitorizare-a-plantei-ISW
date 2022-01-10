@@ -27,54 +27,94 @@ class Userdata {
   }
 }
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
-
 class _LoginScreenState extends State<LoginScreen> {
-  bool access = false;
+   bool access = false;
    String idForUser='';
-  TextEditingController usernameController = new TextEditingController();
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
+   String username='';
+   String password='';
+   String email='';
+
+   final usernameController = new TextEditingController();
+  final emailController = new TextEditingController();
+  final passwordController = new TextEditingController();
+
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+   @override
+   void initState() {
+     super.initState();
+     usernameController.addListener(setUsername);
+     emailController.addListener(setEmail);
+     passwordController.addListener(setPassword);
+   }
+   void setUsername(){
+     username = usernameController.text;
+   }
+
+   void setEmail(){
+     email = emailController.text;
+   }
+
+   void setPassword(){
+     password = passwordController.text;
+   }
    final String apiLoginURL =
        'https://plantmonitoringsystem5.000webhostapp.com/login.php';
   final String apiSignUpURL =
       'https://plantmonitoringsystem5.000webhostapp.com/register.php';
 
   void postProfileData() async {
+    setUsername();
+    setPassword();
+    setEmail();
     if(!isSignupScreen){
-      var dataLogin = {'username': usernameController.text,'password': passwordController.text};
+      var dataLogin = {'username': username,'password': password};
+      print("sus");
+      print(username);
+      if(username != null && password != null) {
+        await http.post(Uri.parse(apiLoginURL), body: json.encode(dataLogin));
+        print("sus2");
+        print(dataLogin);
+        var userIdResponse = await http.get(Uri.parse(apiLoginURL));
+        print("post raspuns");
+        print(userIdResponse.body);
 
 
-      var response = await http.post(Uri.parse(apiLoginURL), body: json.encode(dataLogin));
-      var userIdResponse = await http.get(Uri.parse(apiLoginURL));
-
-      if (userIdResponse.statusCode == 200) {
-        if(userIdResponse.body.isNotEmpty) {
-          access = true;
-          var json = jsonDecode(userIdResponse.body);
-          var idJson = json['id'];
-          idForUser = idJson.toString();
-
-        }
-
-
+        if (userIdResponse.statusCode == 200) {
+          //if (userIdResponse.body.isNotEmpty) {
+            access = true;
+            var json = jsonDecode(userIdResponse.body);
+            var idJson = json['id'];
+            idForUser = idJson.toString();
+          //}
 //         final items = json.decode(userIdResponse.body);
 //         print("222222222222");
-print(userIdResponse.body);
+          //print(userIdResponse.body);
 //         List<Userdata> userList = (items as List).map((data) => Userdata.fromJson(data)).toList();
 // print(userList);
 //          idForUser = userList[0].userID;
 //          print("11111111111111111111111");
 //          print(idForUser);
-      } else {
-        throw Exception('Failed to load data from Server.');
+        } else {
+          throw Exception('Failed to load data from Server.');
+        }
       }
 
     }
     else{
-      var dataSignUp = {'username': usernameController.text,'email': emailController.text,'password': passwordController.text};
+      var dataSignUp = {'username':username,'email': email,'password': password};
       print("signup");
       print(dataSignUp);
       var response1 = await http.post(Uri.parse(apiSignUpURL), body: json.encode(dataSignUp));
@@ -202,11 +242,17 @@ print(userIdResponse.body);
             ),
             onPressed: () {
               postProfileData();
-              print("se primesc date??????????");
-              print(idForUser);
-              if(access)
-              navigateToNextActivity(
-                  context, idForUser);
+              if(access){
+                navigateToNextActivity(
+                    context, idForUser);
+                print("hmm hai sa vedem");
+                print(idForUser);
+              }
+              else{
+                print("login section idforUser");
+                print(idForUser);
+              }
+
               },
           ),
         ],
@@ -235,7 +281,7 @@ print(userIdResponse.body);
             ),
             onPressed: () {
               postProfileData();
-              if(access)
+              //if(access)
                 navigateToNextActivity(
                     context, idForUser);
             },
@@ -247,6 +293,11 @@ print(userIdResponse.body);
 
   Widget buildTextField(
       IconData icon, String hintText, bool isPassword, bool isEmail) {
+    print("user: ");
+    print(usernameController.text);
+    print("pw: ");
+    print(passwordController.text);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: TextField(

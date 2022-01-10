@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:plant_monitoring_system/internetConnection.dart';
@@ -30,6 +31,7 @@ class Plantdata {
 
 class MyPlantsScreen extends StatefulWidget {
   late final String idHolder;
+
   MyPlantsScreen(this.idHolder);
 
   @override
@@ -41,17 +43,23 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       'https://plantmonitoringsystem5.000webhostapp.com/getMyPlant.php';
   final String deletePlantURL =
       'https://plantmonitoringsystem5.000webhostapp.com/deletePlant.php';
-  final String getAllPlantsURL='https://plantmonitoringsystem5.000webhostapp.com/get.php';
+  final String getAllPlantsURL =
+      'https://plantmonitoringsystem5.000webhostapp.com/get.php';
 
   final String idHolder;
+
   _MyPlantsState(this.idHolder);
 
-  void deletePlant(String deleteID, String userID) async{
+  void deletePlant(String deleteID, String userID) async {
     print("hvjvavausdausd");
-    var data = {'plant_id': int.parse(deleteID.toString()),'user_id': int.parse(userID.toString()) };
+    var data = {
+      'plant_id': int.parse(deleteID.toString()),
+      'user_id': int.parse(userID.toString())
+    };
     print("de delete id");
     print(data);
-    var deletePlantResponse = await http.post(Uri.parse(deletePlantURL), body: json.encode(data));
+    var deletePlantResponse =
+        await http.post(Uri.parse(deletePlantURL), body: json.encode(data));
     print("response");
     print(deletePlantResponse.body);
   }
@@ -59,9 +67,11 @@ class _MyPlantsState extends State<MyPlantsScreen> {
   Future<List<Plantdata>> fetchMyPlants() async {
     var data = {'id': int.parse(idHolder.toString())};
 
-    var getPlantResponse = await http.post(Uri.parse(getPlantURL), body: json.encode(data));
+    var getPlantResponse =
+        await http.post(Uri.parse(getPlantURL), body: json.encode(data));
     if (getPlantResponse.statusCode == 200) {
-      final items = json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
+      final items =
+          json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
 
       List<Plantdata> plantList = items.map<Plantdata>((json) {
         return Plantdata.fromJson(json);
@@ -76,19 +86,22 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       throw Exception('Failed to load data from Server.');
     }
   }
+
   Future<List<Plantdata>> fetchAllPlants() async {
     var data = {'id': int.parse(idHolder.toString())};
 
-    var getPlantResponse = await http.post(Uri.parse(getAllPlantsURL), body: json.encode(data));
+    var getPlantResponse =
+        await http.post(Uri.parse(getAllPlantsURL), body: json.encode(data));
     if (getPlantResponse.statusCode == 200) {
-      final items = json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
+      final items =
+          json.decode(getPlantResponse.body).cast<Map<String, dynamic>>();
 
       List<Plantdata> plantList = items.map<Plantdata>((json) {
         return Plantdata.fromJson(json);
       }).toList();
       print(plantList);
       setState(() {
-        packageList =  plantList;
+        packageList = plantList;
         _selectedPackage = packageList[0];
       });
       return plantList;
@@ -96,6 +109,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       throw Exception('Failed to load data from Server.');
     }
   }
+
   late Plantdata _selectedPackage;
   late Future<List<Plantdata>> futurePlants;
   late Future<List<Plantdata>> futureAllPlants;
@@ -113,8 +127,6 @@ class _MyPlantsState extends State<MyPlantsScreen> {
     super.initState();
   }
 
-
-
   // void connectionChanged(dynamic hasConnection) {
   //   setState(() {
   //     hasInterNetConnection = hasConnection;
@@ -125,19 +137,16 @@ class _MyPlantsState extends State<MyPlantsScreen> {
 
   navigateToNextActivity(BuildContext context, String dataHolder) {
     Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (context) => ViewPlantScreen(dataHolder)
-        )
-    );
+        MaterialPageRoute(builder: (context) => ViewPlantScreen(dataHolder)));
   }
 
   @override
   Widget build(BuildContext context) {
-    print("se primesc date??????????");
+    print("plante");
     return FutureBuilder<List<Plantdata>>(
       //future:Future.wait([fetchMyPlants(), fetchAllPlants()]) ,
-        future: fetchAllPlants(),
-      builder: (context, snapshot){
+      future: fetchAllPlants(),
+      builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<DropdownMenuItem<Plantdata>> items = packageList.map((item) {
             return DropdownMenuItem<Plantdata>(
@@ -178,29 +187,30 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Expanded(
-                                child: Center(
-                                  child: ElevatedButton(
-                                    child: Text(
-                                      "+",
-                                      textScaleFactor: 1.5,
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      shape: CircleBorder(),
-                                      primary: Colors.grey,
-                                      elevation: 0,
-                                      maximumSize: Size(90, 90),
-                                    ),
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) =>
-                                            _buildPopupAdd(context, items),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                              // Expanded(
+                              //   child: Center(
+                              //     child: ElevatedButton(
+                              //       child: Text(
+                              //         "+",
+                              //         textScaleFactor: 1.5,
+                              //       ),
+                              //       style: ElevatedButton.styleFrom(
+                              //         shape: CircleBorder(),
+                              //         primary: Colors.grey,
+                              //         elevation: 0,
+                              //         maximumSize: Size(90, 90),
+                              //       ),
+                              //       onPressed: () {
+                              //         showDialog(
+                              //           context: context,
+                              //           builder: (BuildContext context) =>
+                              //               _buildPopupAdd(context, items),
+                              //         );
+                              //       },
+                              //     ),
+                              //   ),
+                              // ),
+                              Spacer(),
                               Expanded(
                                 child: Center(
                                   child: RichText(
@@ -223,8 +233,11 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                       maximumSize: Size(90, 90),
                                     ),
                                     onPressed: () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (context) => MyProfileScreen()));
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  MyProfileScreen()));
                                     },
                                   ),
                                 ),
@@ -236,34 +249,25 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                   Positioned(
                     top: 110,
                     child: Container(
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height - 130,
-                      width: MediaQuery
-                          .of(context)
-                          .size
-                          .width - 30,
+                      height: MediaQuery.of(context).size.height - 130,
+                      width: MediaQuery.of(context).size.width - 30,
                       child: FutureBuilder<List<Plantdata>>(
                           future: futurePlants,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               return GridView.builder(
                                 gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    childAspectRatio: (MediaQuery
-                                        .of(context)
-                                        .size
-                                        .width <
-                                        MediaQuery
-                                            .of(context)
-                                            .size
-                                            .height)
-                                        ? 0.65
-                                        : 1.4,
-                                    mainAxisSpacing: 15,
-                                    crossAxisSpacing: 15,
-                                    crossAxisCount: 2),
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        childAspectRatio:
+                                            (MediaQuery.of(context).size.width <
+                                                    MediaQuery.of(context)
+                                                        .size
+                                                        .height)
+                                                ? 0.65
+                                                : 1.4,
+                                        mainAxisSpacing: 15,
+                                        crossAxisSpacing: 15,
+                                        crossAxisCount: 2),
                                 padding: EdgeInsets.only(top: 0.0),
                                 itemBuilder: (BuildContext context, int index) {
                                   return Container(
@@ -274,10 +278,10 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                               color: Colors.blueGrey
                                                   .withOpacity(0.4),
                                               width: 2.0),
-                                          borderRadius: BorderRadius.circular(
-                                              4.0)),
-                                      color: Colors.greenAccent.withOpacity(
-                                          0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(4.0)),
+                                      color:
+                                          Colors.greenAccent.withOpacity(0.12),
                                       margin: EdgeInsets.only(bottom: 2.0),
                                       child: Padding(
                                         padding: const EdgeInsets.only(
@@ -287,29 +291,29 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                             right: 0),
                                         child: Row(
                                           crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .center,
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: <Widget>[
                                             Column(
                                               children: <Widget>[
                                                 Container(
-                                                  padding:
-                                                  EdgeInsets.only(bottom: 10.0),
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10.0),
                                                   child: SizedBox(
-                                                    width: MediaQuery
-                                                        .of(context)
-                                                        .size
-                                                        .width *
-                                                        0.35,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.35,
                                                     child: Text(
                                                       snapshot.data![index]
                                                           .plantType,
                                                       maxLines: 3,
                                                       //'Note Title',
                                                       style: TextStyle(
-                                                          fontWeight: FontWeight
-                                                              .bold,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                           fontSize: 16,
                                                           color: Colors.white),
                                                     ),
@@ -317,28 +321,24 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                 ),
                                                 Spacer(),
                                                 Container(
-                                                  height: (MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .height >
-                                                      MediaQuery
-                                                          .of(context)
+                                                  height: (MediaQuery.of(
+                                                                  context)
+                                                              .size
+                                                              .height >
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width)
+                                                      ? MediaQuery.of(context)
+                                                              .size
+                                                              .height *
+                                                          0.15
+                                                      : MediaQuery.of(context)
+                                                              .size
+                                                              .height *
+                                                          0.35,
+                                                  width: MediaQuery.of(context)
                                                           .size
-                                                          .width)
-                                                      ? MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .height *
-                                                      0.15
-                                                      : MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .height *
-                                                      0.35,
-                                                  width: MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .width *
+                                                          .width *
                                                       0.35,
                                                   decoration: BoxDecoration(
                                                       image: DecorationImage(
@@ -349,8 +349,8 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                 Spacer(),
                                                 Row(
                                                   mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
                                                   children: [
                                                     ElevatedButton(
                                                       child: Text(
@@ -359,16 +359,17 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                       ),
                                                       style: ElevatedButton
                                                           .styleFrom(
-                                                        primary: Colors
-                                                            .transparent,
+                                                        primary:
+                                                            Colors.transparent,
                                                         elevation: 0,
                                                         //fixedSize: Size(MediaQuery.of(context).size.width * 0.25, MediaQuery.of(context).size.height * 0.15),
                                                       ),
                                                       onPressed: () {
                                                         navigateToNextActivity(
-                                                            context, snapshot
-                                                            .data![index]
-                                                            .plantID);
+                                                            context,
+                                                            snapshot
+                                                                .data![index]
+                                                                .plantID);
                                                       },
                                                     ),
                                                     ElevatedButton(
@@ -378,8 +379,8 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                       ),
                                                       style: ElevatedButton
                                                           .styleFrom(
-                                                        primary: Colors
-                                                            .transparent,
+                                                        primary:
+                                                            Colors.transparent,
                                                         onPrimary: Colors.red,
                                                         elevation: 0,
                                                         //fixedSize: Size(MediaQuery.of(context).size.width * 0.25, MediaQuery.of(context).size.height * 0.15),
@@ -388,18 +389,21 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                                         showDialog(
                                                           context: context,
                                                           builder: (BuildContext
-                                                          context) =>
+                                                                  context) =>
                                                               _buildPopupDelete(
                                                                   context,
                                                                   snapshot
-                                                                      .data![index]
-                                                                      .plantType,snapshot
-                                                                  .data![index]
-                                                                  .plantID,idHolder),
+                                                                      .data![
+                                                                          index]
+                                                                      .plantType,
+                                                                  snapshot
+                                                                      .data![
+                                                                          index]
+                                                                      .plantID,
+                                                                  idHolder),
                                                         );
                                                       },
                                                     ),
-
                                                   ],
                                                 ),
                                               ],
@@ -421,47 +425,123 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                             }
 
                             // By default, show a loading spinner.
-                            return Center(
-                                child: CircularProgressIndicator()
-                            );
+                            return Center(child: CircularProgressIndicator());
                           }),
+                    ),
+                  ),
+                  new Positioned(
+                    top: MediaQuery.of(context).size.height-90,
+                    left: MediaQuery.of(context).size.width-90,
+                    child: SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: ElevatedButton(
+                        child: Text(
+                          "+",
+                          textScaleFactor: 2.9,
+                          textAlign: TextAlign.center,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          shape: CircleBorder(),
+                          primary: Colors.grey,
+                          elevation: 0,
+                          //maximumSize: Size(100, 100),
+                        ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                _buildPopupAdd(context, items),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           );
-      }else if (snapshot.hasError) {
-        return Text('${snapshot.error}');
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
         }
 
         // By default, show a loading spinner.
-        return Center(
-            child: CircularProgressIndicator()
-        );
-  },
+        return Center(child: CircularProgressIndicator());
+      },
     );
   }
 
-  Widget _buildPopupAdd(BuildContext context,List<DropdownMenuItem<Plantdata>> items) {
-
+  Widget _buildPopupAdd(
+      BuildContext context, List<DropdownMenuItem<Plantdata>> items) {
     return new AlertDialog(
-      title: const Text('Choose a plant:'),
-      content:  StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState){
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              DropdownButton<Plantdata>(
-                items: items,
-                value: _selectedPackage,
-                onChanged: (newVal) => setState(() => _selectedPackage = newVal!),
-
-              ),
-            ],
+      //title: const Text('Choose a plant:'),
+      content: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return SizedBox(
+            height: 150,
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 200,
+                  height: 25,
+                  child:  Text(
+                    "Choose a plant:",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(color: Colors.black,fontSize: 18),
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    DropdownButton<Plantdata>(
+                      items: items,
+                      value: _selectedPackage,
+                      onChanged: (newVal) =>
+                          setState(() => _selectedPackage = newVal!),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                SizedBox(
+                  width: 200,
+                  height: 25,
+                  child:  Text(
+                    "Nickname(optional)",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(color: Colors.black,fontSize: 18),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  height: 25,
+                  child: TextField(
+                    //controller: temperatureController,
+                    // keyboardType: TextInputType.emailAddress,
+                    // inputFormatters: [
+                    //   LengthLimitingTextInputFormatter(6),
+                    //   FilteringTextInputFormatter.allow(
+                    //       RegExp(r'(^\-?\d*\.?\d*)')),
+                    // ],
+                    textAlignVertical: TextAlignVertical.center,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(color: Colors.black, fontSize: 18),
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue),
+                        //borderRadius: BorderRadius.all(Radius.circular(35.0)),
+                      ),
+                      //hintText: "hintText",
+                      //hintStyle: TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
-  },
+        },
       ),
       actions: <Widget>[
         new ElevatedButton(
@@ -496,31 +576,30 @@ class _MyPlantsState extends State<MyPlantsScreen> {
         ),
       ],
     );
-
   }
 
-  Widget _buildPopupDelete(BuildContext context, String text, String id, String idUser) {
-
+  Widget _buildPopupDelete(
+      BuildContext context, String text, String id, String idUser) {
     return new AlertDialog(
       title: const Text("Are you sure you want to delete this plant?"),
       content: new Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(text,
+          Text(
+            text,
             style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: Colors.black,
-            ),),
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
       actions: <Widget>[
         new ElevatedButton(
           onPressed: () {
-            deletePlant(id, idUser
-
-            );
+            deletePlant(id, idUser);
             //aici facut pamapamadadfgh
             Navigator.of(context).pop();
           },

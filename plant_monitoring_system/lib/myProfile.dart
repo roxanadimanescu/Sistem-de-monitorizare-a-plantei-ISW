@@ -7,7 +7,7 @@ import 'login.dart';
 
 class MyProfileScreen extends StatefulWidget {
   late final String idHolder;
-  //ViewPlantScreen(this.idHolder);
+  MyProfileScreen(this.idHolder);
   @override
   _MyProfileState createState() => _MyProfileState(this.idHolder);
 }
@@ -24,45 +24,27 @@ class _MyProfileState extends State<MyProfileScreen> {
   TextEditingController oldPasswordController = new TextEditingController();
   _MyProfileState(this.idHolder);
 
-  Future<List<Userdata>> changeUsername() async {
-
-    var data = {'id': int.parse(idHolder.toString()), 'new_username': int.parse(newUsernameController.text)};
+  void changeUsername() async {
+    print("change username, username trimis");
+    print(newUsernameController.text);
+    print(int.parse(idHolder.toString()));
+    var data = {'id': int.parse(idHolder.toString()), 'new_username': newUsernameController.text.toString()};
+    print("data cu id si new user");
     print(data);
-    print("ID");
     var response = await http.post(Uri.parse(apiChangeUsernameURL), body: json.encode(data));
+    print("ceva");
     print(response.body);
-    if (response.statusCode == 200) {
-      final items = json.decode(response.body).cast<Map<String, dynamic>>();
-      List<Userdata> usersList = items.map<Plantdata>((json) {
-        return Userdata.fromJson(json);
-      }).toList();
-      print(usersList);
-      return usersList;
-    }
-    else {
-      throw Exception('Failed to load data from Server.');
-    }
 
   }
 
-  Future<List<Userdata>> changePassword() async {
+  void changePassword() async {
 
-    var data = {'id': int.parse(idHolder.toString()), 'old_pass': int.parse(oldPasswordController.text), 'new_pass': int.parse(newPasswordController.text)};
+    var data = {'id': int.parse(idHolder.toString()), 'old_pass': oldPasswordController.text, 'new_pass': newPasswordController.text};
     print(data);
     print("ID");
     var response = await http.post(Uri.parse(apiChangePasswordURL), body: json.encode(data));
     print(response.body);
-    if (response.statusCode == 200) {
-      final items = json.decode(response.body).cast<Map<String, dynamic>>();
-      List<Userdata> usersList = items.map<Plantdata>((json) {
-        return Userdata.fromJson(json);
-      }).toList();
-      print(usersList);
-      return usersList;
-    }
-    else {
-      throw Exception('Failed to load data from Server.');
-    }
+
 
   }
 
@@ -252,7 +234,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                               padding: const EdgeInsets.only(bottom: 15.0),
                                               child: ElevatedButton(
                                                 child: Text(
-                                                  "Done",
+                                                  "Done user",
                                                   textScaleFactor: 1.5,
                                                 ),
                                                 style: ElevatedButton.styleFrom(
@@ -262,9 +244,8 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                   shadowColor: Colors.black,
                                                 ),
                                                 onPressed: () {
-                                                  setState(() {
+                                                  changeUsername();
 
-                                                  });
                                                 },
                                               )
                                           ),
@@ -363,7 +344,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                           padding: const EdgeInsets.only(bottom: 15.0),
                                           child: ElevatedButton(
                                             child: Text(
-                                              "Done",
+                                              "Done pw",
                                               textScaleFactor: 1.5,
                                             ),
                                             style: ElevatedButton.styleFrom(
@@ -373,9 +354,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                               shadowColor: Colors.black,
                                             ),
                                             onPressed: () {
-                                              setState(() {
-
-                                              });
+                                              changePassword();
                                             },
                                           )
                                         ),
@@ -389,7 +368,10 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 borderRadius: new BorderRadius.circular(20.0),
                                               ),
                                             ),
-                                            onPressed: () => null,
+                                            onPressed: () {
+                                              // Navigator.of(context).push(
+                                              //     MaterialPageRoute(builder: (context) => LoginScreen()));
+                                            },
                                             child: Stack(
                                               children: <Widget>[
                                                 Align(

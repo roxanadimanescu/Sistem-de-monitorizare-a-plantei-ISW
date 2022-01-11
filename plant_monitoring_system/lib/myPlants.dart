@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:plant_monitoring_system/internetConnection.dart';
 import 'package:plant_monitoring_system/viewPlant.dart';
 
 import 'myProfile.dart';
@@ -45,23 +44,34 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       'https://plantmonitoringsystem5.000webhostapp.com/deletePlant.php';
   final String getAllPlantsURL =
       'https://plantmonitoringsystem5.000webhostapp.com/get.php';
+  final String addPlantURL =
+      'https://plantmonitoringsystem5.000webhostapp.com/addPlant.php';
 
   final String idHolder;
-
+  TextEditingController nicknameController = TextEditingController();
   _MyPlantsState(this.idHolder);
 
   void deletePlant(String deleteID, String userID) async {
-    print("hvjvavausdausd");
     var data = {
       'plant_id': int.parse(deleteID.toString()),
       'user_id': int.parse(userID.toString())
     };
-    print("de delete id");
-    print(data);
+    //print("de delete id");
+    //print(data);
     var deletePlantResponse =
         await http.post(Uri.parse(deletePlantURL), body: json.encode(data));
-    print("response");
-    print(deletePlantResponse.body);
+    //print("response");
+    //print(deletePlantResponse.body);
+  }
+  void addPlant(String nickname, String userID, String plantID) async {
+    var data = {
+      'nickname': nickname,
+      'user_id': int.parse(userID.toString()),
+      'plant_id': int.parse(plantID.toString()),
+    };
+    var addResponse = await http.post(Uri.parse(addPlantURL), body: json.encode(data));
+    print("raspuns la add");
+    print(addResponse.body);
   }
 
   Future<List<Plantdata>> fetchMyPlants() async {
@@ -76,7 +86,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       List<Plantdata> plantList = items.map<Plantdata>((json) {
         return Plantdata.fromJson(json);
       }).toList();
-      print(plantList);
+      //print(plantList);
       // setState(() {
       //   packageList =  plantList;
       //   _selectedPackage = packageList[0];
@@ -99,7 +109,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       List<Plantdata> plantList = items.map<Plantdata>((json) {
         return Plantdata.fromJson(json);
       }).toList();
-      print(plantList);
+      //print(plantList);
       setState(() {
         packageList = plantList;
         _selectedPackage = packageList[0];
@@ -142,7 +152,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("plante");
+    //print("plante");
     return FutureBuilder<List<Plantdata>>(
       //future:Future.wait([fetchMyPlants(), fetchAllPlants()]) ,
       future: fetchAllPlants(),
@@ -237,7 +247,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  MyProfileScreen()));
+                                                  MyProfileScreen(idHolder)));
                                     },
                                   ),
                                 ),
@@ -516,7 +526,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
                   width: 200,
                   height: 25,
                   child: TextField(
-                    //controller: temperatureController,
+                    controller: nicknameController,
                     // keyboardType: TextInputType.emailAddress,
                     // inputFormatters: [
                     //   LengthLimitingTextInputFormatter(6),
@@ -546,7 +556,7 @@ class _MyPlantsState extends State<MyPlantsScreen> {
       actions: <Widget>[
         new ElevatedButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            addPlant(nicknameController.text, idHolder, _selectedPackage.plantID);
           },
           style: ElevatedButton.styleFrom(
             primary: Colors.transparent,

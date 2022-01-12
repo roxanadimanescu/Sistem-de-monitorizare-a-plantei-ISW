@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:plant_monitoring_system/myPlants.dart';
 
 import 'login.dart';
 
@@ -25,27 +24,13 @@ class _MyProfileState extends State<MyProfileScreen> {
   _MyProfileState(this.idHolder);
 
   void changeUsername() async {
-    print("change username, username trimis");
-    print(newUsernameController.text);
-    print(int.parse(idHolder.toString()));
     var data = {'id': int.parse(idHolder.toString()), 'new_username': newUsernameController.text.toString()};
-    print("data cu id si new user");
-    print(data);
-    var response = await http.post(Uri.parse(apiChangeUsernameURL), body: json.encode(data));
-    print("ceva");
-    print(response.body);
-
+    await http.post(Uri.parse(apiChangeUsernameURL), body: json.encode(data));
   }
 
   void changePassword() async {
-
     var data = {'id': int.parse(idHolder.toString()), 'old_pass': oldPasswordController.text, 'new_pass': newPasswordController.text};
-    print(data);
-    print("ID");
-    var response = await http.post(Uri.parse(apiChangePasswordURL), body: json.encode(data));
-    print(response.body);
-
-
+    await http.post(Uri.parse(apiChangePasswordURL), body: json.encode(data));
   }
 
   @override
@@ -86,16 +71,9 @@ class _MyProfileState extends State<MyProfileScreen> {
                                     ),
                                   ),
                                 ),
-
                               ],
                             )),
                         Container(
-                          // margin: EdgeInsets.symmetric(horizontal: 20),
-                          // width: MediaQuery
-                          //     .of(context)
-                          //     .size
-                          //     .width,
-                          // padding: EdgeInsets.only(bottom: 20),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
@@ -132,7 +110,6 @@ class _MyProfileState extends State<MyProfileScreen> {
                                         fontWeight: FontWeight.bold,
                                         fontSize: 25,
                                         color: Colors.white,
-
                                       ),
                                     ),
                                   ),
@@ -218,7 +195,6 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 decoration: InputDecoration(
                                                   fillColor: Colors.white,
                                                   filled: true,
-
                                                   enabledBorder: OutlineInputBorder(
                                                     borderSide: BorderSide(color: Colors.blue),
                                                     //borderRadius: BorderRadius.all(Radius.circular(35.0)),
@@ -234,7 +210,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                               padding: const EdgeInsets.only(bottom: 15.0),
                                               child: ElevatedButton(
                                                 child: Text(
-                                                  "Done user",
+                                                  "Done",
                                                   textScaleFactor: 1.5,
                                                 ),
                                                 style: ElevatedButton.styleFrom(
@@ -245,7 +221,6 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 ),
                                                 onPressed: () {
                                                   changeUsername();
-
                                                 },
                                               )
                                           ),
@@ -289,7 +264,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 Align(
                                                     alignment: Alignment.centerRight,
                                                     child: Icon(
-                                                      pressedChangePassword ? Icons.arrow_drop_down : Icons.arrow_drop_up  ,
+                                                      !pressedChangePassword ? Icons.arrow_drop_down : Icons.arrow_drop_up  ,
                                                       color: Colors.black,
                                                       size: 35,)
                                                 ),
@@ -307,12 +282,11 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 decoration: InputDecoration(
                                                   fillColor: Colors.white,
                                                   filled: true,
-
                                                   enabledBorder: OutlineInputBorder(
                                                     borderSide: BorderSide(color: Colors.blue),
                                                     //borderRadius: BorderRadius.all(Radius.circular(35.0)),
                                                   ),
-                                                  hintText: "old pw",
+                                                  hintText: "old password",
                                                   hintStyle: TextStyle(fontSize: 15, color: Colors.black),
                                                 ),
                                               ),
@@ -328,12 +302,11 @@ class _MyProfileState extends State<MyProfileScreen> {
                                                 decoration: InputDecoration(
                                                   fillColor: Colors.white,
                                                   filled: true,
-
                                                   enabledBorder: OutlineInputBorder(
                                                     borderSide: BorderSide(color: Colors.blue),
                                                     //borderRadius: BorderRadius.all(Radius.circular(35.0)),
                                                   ),
-                                                  hintText: "new pw",
+                                                  hintText: "new password",
                                                   hintStyle: TextStyle(fontSize: 15, color: Colors.black),
                                                 ),
                                               ),
@@ -344,7 +317,7 @@ class _MyProfileState extends State<MyProfileScreen> {
                                           padding: const EdgeInsets.only(bottom: 15.0),
                                           child: ElevatedButton(
                                             child: Text(
-                                              "Done pw",
+                                              "Done",
                                               textScaleFactor: 1.5,
                                             ),
                                             style: ElevatedButton.styleFrom(
@@ -369,8 +342,8 @@ class _MyProfileState extends State<MyProfileScreen> {
                                               ),
                                             ),
                                             onPressed: () {
-                                              // Navigator.of(context).push(
-                                              //     MaterialPageRoute(builder: (context) => LoginScreen()));
+                                              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                                                  LoginScreen()), (Route<dynamic> route) => false);
                                             },
                                             child: Stack(
                                               children: <Widget>[

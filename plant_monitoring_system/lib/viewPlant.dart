@@ -6,7 +6,6 @@ import 'package:plant_monitoring_system/myPlants.dart';
 
 class ViewPlantScreen extends StatefulWidget {
   late final String idHolder;
-
   ViewPlantScreen(this.idHolder);
 
   @override
@@ -14,14 +13,29 @@ class ViewPlantScreen extends StatefulWidget {
 }
 
 class _ViewPlantState extends State<ViewPlantScreen> {
+  final String idHolder;
+  _ViewPlantState(this.idHolder);
+
+  final String apiURL =
+      'https://plantmonitoringsystem5.000webhostapp.com/getSpecificPlant.php';
+
   bool pressedDescription = false;
   bool pressedInfoTemperature = false;
   bool pressedInfoHumidity = false;
   bool pressedInfoBrightness = false;
-
+  double temperature = 0;
+  double humidity = 0;
+  double brightness = 00;
   final temperatureController = TextEditingController();
   final humidityController = TextEditingController();
   final brightnessController = TextEditingController();
+  late Future<List<Plantdata>> futurePlants;
+
+  Color mood = Colors.green;
+  String specificMessage = '';
+  var temperatureMessages = ['Too cold, I\u0027m freezing!','It\u0027s a bit cold.','Good temeperature.','It\u0027s a bit hot.','Too hot, I\u0027m roasting!'];
+  var humidityMessages = ['Too dry, I\u0027m thirsty.','I\u0027m a little bit thirsty.','Good humidity.','It\u0027s a bit too much water.','Too much water, I\u0027m drowning!'];
+  var brightnessMesages = ['Too dark.','It\u0027s a little bit dark.','Good brightness.','It\u0027s a little bit too bright.','It\u0027s too bright.'];
 
   @override
   void dispose() {
@@ -33,18 +47,10 @@ class _ViewPlantState extends State<ViewPlantScreen> {
     super.dispose();
   }
 
-  final String apiURL =
-      'https://plantmonitoringsystem5.000webhostapp.com/getSpecificPlant.php';
-  final String idHolder;
-
-  _ViewPlantState(this.idHolder);
-
+  //obtain data of chosen plant for more details
   Future<List<Plantdata>> fetchPlant() async {
     var data = {'id': int.parse(idHolder.toString())};
-    print(data);
-    print("ID");
     var response = await http.post(Uri.parse(apiURL), body: json.encode(data));
-    print(response.body);
     if (response.statusCode == 200) {
       final items = json.decode(response.body).cast<Map<String, dynamic>>();
       List<Plantdata> plantList = items.map<Plantdata>((json) {
@@ -56,11 +62,6 @@ class _ViewPlantState extends State<ViewPlantScreen> {
       throw Exception('Failed to load data from Server.');
     }
   }
-
-  late Future<List<Plantdata>> futurePlants;
-  double temperature = 0;
-  double humidity = 0;
-  double brightness = 0;
 
   @override
   void initState() {
@@ -84,7 +85,7 @@ class _ViewPlantState extends State<ViewPlantScreen> {
       if (double.parse(temperatureController.text) < -20) temperature = 0;
       if (double.parse(temperatureController.text) > 40) temperature = 60;
     } else {
-      temperature = 20;
+      temperature = 30;
     }
     return temperature;
   }
@@ -106,39 +107,25 @@ class _ViewPlantState extends State<ViewPlantScreen> {
       if (double.parse(brightnessController.text) < 0) brightness = 0;
       if (double.parse(brightnessController.text) > 1000) brightness = 1000;
     } else {
-      brightness = 20;
+      brightness = 500;
     }
     return brightness;
   }
 
-  Color mood = Colors.green;
-  bool sad = false;
-  bool neutral = false;
-  bool happy = false;
-  String specificMessage = '';
-  var temperatureMessages = ['Too cold, I\u0027m freezing!','It\u0027s a bit cold.','Good temeperature.','It\u0027s a bit hot.','Too hot, I\u0027m roasting!'];
-  var humidityMessages = ['Too dry, I\u0027m thirsty','I\u0027m a little bit thirsty.','Good humidity.','It\u0027s a bit too much water.','Too much water, I\u0027m drowning!'];
-  var brightnessMesages = ['Too dark.','It\u0027s a little bit dark.','Good brightness.','It\u0027s a little bit too bright.','It\u0027s too bright.'];
-
   Color setMood(double min, double max, double k, double x, var messages) {
     if (x < min-k) {
-      sad=true;
       specificMessage = messages[0];
       return mood = Colors.red;
     } else if (x >= min-k  && x < min) {
-      neutral=true;
       specificMessage = messages[1];
       return mood = Colors.yellow;
     } else if (x >= min && x <= max) {
-      happy=true;
       specificMessage = messages[2];
       return mood = Colors.green;
     } else if (x > max && x <= max+k) {
-      neutral=true;
       specificMessage = messages[3];
       return mood = Colors.yellow;
     }
-    sad=true;
     specificMessage = messages[4];
     return mood = Colors.red;
   }
@@ -146,14 +133,12 @@ class _ViewPlantState extends State<ViewPlantScreen> {
   @override
   Widget build(BuildContext context) {
     double widthScreen = MediaQuery.of(context).size.width;
-    //print(widthScreen);
     return Scaffold(
         body: FutureBuilder<List<Plantdata>>(
       future: futurePlants,
       builder: (context, snapshot) {
         if (!snapshot.hasData)
           return Center(child: CircularProgressIndicator());
-
         return Container(
           constraints: BoxConstraints.expand(),
           decoration: BoxDecoration(
@@ -237,10 +222,15 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                         Container(
                           margin: EdgeInsets.symmetric(horizontal: 30),
                           width: MediaQuery.of(context).size.width - 60,
-                          height: 270,
+                          height: (MediaQuery.of(context).size.width <
+                              MediaQuery.of(context)
+                                  .size
+                                  .height)
+                              ? 200
+                              : 200,
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage("assets/images/bg.jpg"),
+                              image: AssetImage("assets/images/"+snapshot.data![0].plantType+".jpg"),
                               fit: BoxFit.contain,
                               alignment: Alignment.centerLeft,
                             ),
@@ -366,18 +356,18 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                        color: setMood(20, 30,5,
+                                        color: setMood(double.parse(snapshot.data![0].min_temp), double.parse(snapshot.data![0].max_temp),5,
                                                 setTemperature()-20, temperatureMessages )
                                             .withOpacity(0.9),
                                         blurRadius: 10,
                                         spreadRadius: 3)
                                   ],
                                   color:
-                                      setMood(20, 30,5, setTemperature()-20,temperatureMessages)
+                                      setMood(double.parse(snapshot.data![0].min_temp), double.parse(snapshot.data![0].max_temp),5, setTemperature()-20,temperatureMessages)
                                           .withOpacity(0.1),
                                   border: Border.all(
                                       color: setMood(
-                                          20, 30,5, setTemperature()-20,temperatureMessages),
+                                          double.parse(snapshot.data![0].min_temp), double.parse(snapshot.data![0].max_temp),5, setTemperature()-20,temperatureMessages),
                                       width: 2),
                                 ),
                                 width: 25,
@@ -385,7 +375,7 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                 margin: const EdgeInsets.only(
                                     bottom: 0, left: 20, right: 0),
                                 child: Image.asset(
-                                  happy ? 'assets/icons/happy.png' : neutral ? 'assets/icons/neutral.png' : 'assets/icons/sad.png',
+                                  mood == Colors.green ? 'assets/icons/happy.png' : mood == Colors.yellow ? 'assets/icons/neutral.png' : 'assets/icons/sad.png',
                                   width: 18,
                                   height: 18,
                                   //fit: BoxFit.cover,
@@ -401,12 +391,6 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    // boxShadow: [
-                                    //   BoxShadow(
-                                    //       color: Colors.white,
-                                    //       blurRadius: 10,
-                                    //       spreadRadius: 3)
-                                    // ],
                                     color:
                                     Colors.white,
                                     border: Border.all(
@@ -569,18 +553,18 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                          color: setMood(20, 30, 10,
+                                          color: setMood(double.parse(snapshot.data![0].min_humidity), double.parse(snapshot.data![0].max_humidity), 10,
                                               setHumidity(), humidityMessages )
                                               .withOpacity(0.9),
                                           blurRadius: 10,
                                           spreadRadius: 3)
                                     ],
                                     color:
-                                    setMood(20, 30,10,setHumidity(),humidityMessages)
+                                    setMood(double.parse(snapshot.data![0].min_humidity), double.parse(snapshot.data![0].max_humidity),10,setHumidity(),humidityMessages)
                                         .withOpacity(0.1),
                                     border: Border.all(
                                         color: setMood(
-                                            20, 30,10, setHumidity(),humidityMessages),
+                                            double.parse(snapshot.data![0].min_humidity), double.parse(snapshot.data![0].max_humidity),10, setHumidity(),humidityMessages),
                                         width: 2),
                                   ),
                                   width: 25,
@@ -588,7 +572,7 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                   margin: const EdgeInsets.only(
                                       bottom: 0, left: 20, right: 0),
                                   child: Image.asset(
-                                    happy ? 'assets/icons/happy.png' : neutral ? 'assets/icons/neutral.png' : 'assets/icons/sad.png',
+                                    mood == Colors.green ? 'assets/icons/happy.png' : mood == Colors.yellow ? 'assets/icons/neutral.png' : 'assets/icons/sad.png',
                                     width: 18,
                                     height: 18,
                                     //fit: BoxFit.cover,
@@ -745,18 +729,18 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                        color: setMood(300, 400,100,
+                                        color: setMood(double.parse(snapshot.data![0].min_light), double.parse(snapshot.data![0].max_light),100,
                                             setBrightness(),brightnessMesages )
                                             .withOpacity(0.9),
                                         blurRadius: 10,
                                         spreadRadius: 3)
                                   ],
                                   color:
-                                  setMood(300, 400,100, setBrightness(),brightnessMesages)
+                                  setMood(double.parse(snapshot.data![0].min_light), double.parse(snapshot.data![0].max_light),100, setBrightness(),brightnessMesages)
                                       .withOpacity(0.1),
                                   border: Border.all(
                                       color: setMood(
-                                          300, 400,100, setBrightness(),brightnessMesages),
+                                          double.parse(snapshot.data![0].min_light), double.parse(snapshot.data![0].max_light),100, setBrightness(),brightnessMesages),
                                       width: 2),
                                 ),
                                 width: 25,
@@ -764,7 +748,7 @@ class _ViewPlantState extends State<ViewPlantScreen> {
                                 margin: const EdgeInsets.only(
                                     bottom: 0, left: 20, right: 0),
                                 child: Image.asset(
-                                  happy ? 'assets/icons/happy.png' : neutral ? 'assets/icons/neutral.png' : 'assets/icons/sad.png',
+                                  mood == Colors.green ? 'assets/icons/happy.png' : mood == Colors.yellow ? 'assets/icons/neutral.png' : 'assets/icons/sad.png',
                                   width: 18,
                                   height: 18,
                                   //fit: BoxFit.cover,

@@ -1,7 +1,5 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:plant_monitoring_system/myPlants.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -35,26 +33,29 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   var _formKey = GlobalKey<FormState>();
-  bool access = false;
   String idForUser = '';
   String username = '';
   String password = '';
   String email = '';
   bool usernameValid = false;
+  bool isSignupScreen = false;
+
   final String apiLoginURL =
       'https://plantmonitoringsystem5.000webhostapp.com/login.php';
   final String apiSignUpURL =
       'https://plantmonitoringsystem5.000webhostapp.com/register.php';
 
+  var userIdResponse ;
+
   final usernameController = new TextEditingController();
   final emailController = new TextEditingController();
   final passwordController = new TextEditingController();
 
-  void checkInputUsername() {
-    if (!username.isEmpty) {
-      usernameValid = true;
-    }
-  }
+  // void checkInputUsername() {
+  //   if (!username.isEmpty) {
+  //     usernameValid = true;
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -74,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
     passwordController.addListener(setPassword);
   }
 
+  //setters for username, email, password
   void setUsername() {
     username = usernameController.text;
   }
@@ -85,80 +87,49 @@ class _LoginScreenState extends State<LoginScreen> {
   void setPassword() {
     password = passwordController.text;
   }
-  var userIdResponse ;
+
+  //sending username,password( and email for signUp page), taking userID if data match up for next page
   void postProfileData() async {
     setUsername();
     setPassword();
     setEmail();
     if (!isSignupScreen) {
       var dataLogin = {'username': username, 'password': password};
-      print("sus");
-      print(username);
-      if (username != null && password != null) {
         userIdResponse= await http.post(Uri.parse(apiLoginURL), body: json.encode(dataLogin));
-        print("sus2");
-        print(dataLogin);
-        // userIdResponse = await http.get(Uri.parse(apiLoginURL));
-         print("get raspuns");
-         print(userIdResponse.body);
-
         if (userIdResponse.statusCode == 200) {
-          if (userIdResponse.body.isNotEmpty) {
-          access = true;
+          while (!userIdResponse.body.isNotEmpty) {
+          }
           var json = jsonDecode(userIdResponse.body);
           var idJson = json['id'];
           idForUser = idJson.toString();
-          }
-//         final items = json.decode(userIdResponse.body);
-//         print("222222222222");
-          //print(userIdResponse.body);
-//         List<Userdata> userList = (items as List).map((data) => Userdata.fromJson(data)).toList();
-// print(userList);
-//          idForUser = userList[0].userID;
-//          print("11111111111111111111111");
-//          print(idForUser);
+          navigateToNextActivity(context, idForUser);
         } else {
           throw Exception('Failed to load data from Server.');
         }
-      }
     } else {
       var dataSignUp = {
         'username': username,
         'email': email,
         'password': password
       };
-      print("signup");
-      print(dataSignUp);
       var response1 = await http.post(Uri.parse(apiSignUpURL),
           body: json.encode(dataSignUp));
-      print(response1.body);
       if (response1.statusCode == 200) {
-        access = true;
+        navigateToNextActivity(context, idForUser);
+      }else{
+        throw Exception('Failed to load data from Server.');
       }
+
     }
   }
 
-  //bool isValid = false;
+  //checking form key
   bool _trySubmitForm() {
     bool? isValid = _formKey.currentState?.validate();
     if (isValid != null)
       return isValid;
     return isValid = false;
-    // if (isValid == true) {
-    //   debugPrint('Everything looks good!');
-    //   debugPrint(_userEmail);
-    //   debugPrint(_userName);
-    //   debugPrint(_password);
-    //   debugPrint(_confirmPassword);
-    //
-    //   /*
-    //   Continute proccessing the provided information with your own logic
-    //   such us sending HTTP requests, savaing to SQLite database, etc.
-    //   */
-    // }
   }
-
-  bool isSignupScreen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Column(
                 children: [
+                  //title header
                   Container(
                       padding: EdgeInsets.only(top: 20),
                       height: 80,
@@ -195,6 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       )),
                 ],
               ),
+              //container for input fields
               Container(
                   margin: EdgeInsets.only(
                       top: MediaQuery
@@ -228,6 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   )),
               Spacer(),
+              //footer for changing interface Login/SignUp
               Container(
                 alignment: Alignment.bottomCenter,
                 margin: EdgeInsets.only(
@@ -278,6 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  //function for Login interface
   Container buildLoginSection() {
     return Container(
       margin: EdgeInsets.only(top: 0, left: 10, right: 10),
@@ -303,17 +278,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   shadowColor: Colors.black,
                 ),
                 onPressed: () {
-                  _trySubmitForm;
                   if (_trySubmitForm()) {
                     postProfileData();
-                    if (access) {
-                      navigateToNextActivity(context, idForUser);
-                      print("hmm hai sa vedem");
-                      print(idForUser);
-                    } else {
-                      print("login section idforUser");
-                      print(idForUser);
-                    }
                   }
                 },
               ),
@@ -324,6 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  //function for SignUp interface
   Container buildSignupSection() {
     return Container(
       margin: EdgeInsets.only(top: 0, left: 10, right: 10),
@@ -351,11 +318,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   shadowColor: Colors.black,
                 ),
                 onPressed: () {
-                  _trySubmitForm;
                   if (_trySubmitForm()) {
                     postProfileData();
-                    //if(access)
-                    navigateToNextActivity(context, idForUser);
                   };
                 },
               ),
@@ -366,13 +330,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  //function for creating input fields
   Widget buildTextField(IconData icon, String hintText, bool isPassword,
       bool isEmail) {
-    print("user: ");
-    print(usernameController.text);
-    print("pw: ");
-    print(passwordController.text);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: TextFormField(
@@ -398,6 +358,7 @@ class _LoginScreenState extends State<LoginScreen> {
           hintStyle: TextStyle(fontSize: 15, color: Colors.black),
         ),
         validator: (value) {
+          //email conditions for validation
           if (isEmail) {
             if (value == null || value
                 .trim()
@@ -405,12 +366,13 @@ class _LoginScreenState extends State<LoginScreen> {
               return 'Please enter your email address';
             }
             // Check if the entered email has the right format
-            if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+            if (!RegExp( r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$').hasMatch(value)) {
               return 'Please enter a valid email address';
             }
             // Return null if the entered email is valid
             return null;
           };
+          //password conditions for validation
           if (isPassword) {
             if (value == null || value
                 .trim()
@@ -424,6 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
             }
             // Return null if the entered password is valid
             return null;
+            //username conditions for validation
           } else {
             if (value == null || value
                 .trim()
@@ -474,6 +437,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  //moving from Login/SignUp page -> page of user's plants
   navigateToNextActivity(BuildContext context, String dataHolder) {
     Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => MyPlantsScreen(dataHolder)));

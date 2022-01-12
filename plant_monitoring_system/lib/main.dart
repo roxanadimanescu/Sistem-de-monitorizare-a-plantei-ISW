@@ -18,7 +18,8 @@ class MyApp extends StatelessWidget {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       behavior: HitTestBehavior.translucent,
-      child: MaterialApp(home: LoginScreen()),
+      child: MaterialApp(home: LoginScreen(),debugShowCheckedModeBanner:false,
+      ),
     );
   }
 }
